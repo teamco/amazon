@@ -1,23 +1,26 @@
 class TicTacToe {
-    constructor(size, root) { 
+    constructor(size, root, debug = false) { 
         this.winMap = [];
         this.players = {
             '0': [],
             'X': []      
         };
 
+        this.debug = debug;
         this.currentPlayer = 'X';
         this.winner = null;
+
+        this.size = size;
         
         if (size & 1) {
-            this.renderDOM(size,  root, {margin: 2, width: 50});
+            this.renderDOM(root, {margin: 2, width: 50});
             this.lis = document.querySelectorAll('li');
             this.initMatrix(size);
 
-            window.addEventListener('click', e=> {
+            window.addEventListener('click', e => {
                 if (e.target.tagName === 'LI') {
                   e.preventDefault();
-                  this.handleClick(e.target, size);
+                  this.handleClick(e.target);
                 }
             });
         
@@ -26,14 +29,14 @@ class TicTacToe {
         }
     }
 
-    renderDOM(size, root, opts) {
-        const dims = size * opts.width + (size - 1) * opts.margin;
+    renderDOM(root, opts) {
+        const dims = this.size * opts.width + (this.size - 1) * opts.margin;
         root.setAttribute('style', 'width:' + dims + 'px;');
-        for(let i = 0; i < size; i++) {
+        for(let i = 0; i < this.size; i++) {
             const ul = document.createElement('ul');
             ul.setAttribute('style', 'margin-bottom:' + opts.margin + 'px;height:' + opts.width + 'px');
             root.appendChild(ul);
-            for (let y = 0; y < size; y++) {
+            for (let y = 0; y < this.size; y++) {
                 const li = document.createElement('li');
                 li.setAttribute('style', 'margin-right:' + opts.margin + 'px;width:' + opts.width + 'px');
                 ul.appendChild(li);
@@ -41,13 +44,14 @@ class TicTacToe {
         }
     }
 
-    initMatrix(size) {
+    initMatrix() {
         let winMapRow = [];
         
         // Hanlde rows
         this.lis.forEach((li, idx) => {
-            li.setAttribute('data-index', idx); 
-            if (idx && idx % size === 0) {
+            li.setAttribute('data-index', idx);            
+            this.debug && (li.innerHTML = '<span>' + idx + '</span>'); 
+            if (idx && idx % this.size === 0) {
                 this.winMap.push(winMapRow);            
                 winMapRow = [idx];              
             } else {
@@ -68,20 +72,21 @@ class TicTacToe {
 
         this.winMap = [...this.winMap, ...rotate90, diagonal1, diagonal2];
         
-        console.log(this.winMap)
+        this.debug && console.log('Win map', this.winMap);
     }
 
     handlePlayers(player) {
         this.currentPlayer = player === 'X' ? '0' : 'X';
+        this.debug && console.log('Current player', this.currentPlayer);
     }
 
-    handleClick(handler, size) {
+    handleClick(handler) {
         if (handler.className.match(/selected/) || this.winner) {
             return false;
         }
         handler.classList.add('selected', 'selected' + this.currentPlayer);
         this.players[this.currentPlayer].push(handler.getAttribute('data-index'));
-        this.handleWinners(size);
+        this.handleWinners();
         this.handlePlayers(this.currentPlayer);
     }
 
@@ -89,13 +94,13 @@ class TicTacToe {
         return document.querySelector('li[data-index="' + idx + '"]');
     }
 
-    handleWinners(size) {
+    handleWinners() {
         const playerMap = this.players[this.currentPlayer];
-        const res = this.players[this.currentPlayer].join('');
-        playerMap.length >= size && this.winMap.forEach(nums => {
+        const res = this.players[this.currentPlayer].map(x => parseInt(x, 10));
+        playerMap.length >= this.size && this.winMap.forEach(nums => {
             let winner = true;
             nums.forEach(n => {
-                winner = winner && res.match(n);
+                winner = winner && res.indexOf(n) > -1;
             });
             
             if (winner) {
@@ -110,5 +115,5 @@ class TicTacToe {
 }
 
 (function() {
-    new TicTacToe(5, document.querySelector('#root'));
+    new TicTacToe(5, document.querySelector('#root'), true);
 })();
