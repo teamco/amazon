@@ -1,5 +1,5 @@
 class TicTacToe {
-    constructor(size, root, debug = false) { 
+    constructor(size, minSize, root, debug = false) { 
         this.winMap = [];
         this.players = {
             '0': [],
@@ -11,10 +11,15 @@ class TicTacToe {
         this.winner = null;
 
         this.size = size;
+        this.minSize = minSize;
+
+        if (size < minSize) {
+            throw new Error('Size less than Min size');
+        }
         
         if (size & 1) {
             this.renderDOM(root, {margin: 2, width: 50});
-            this.lis = document.querySelectorAll('li');
+            this.uls = document.querySelectorAll('ul');
             this.initMatrix(size);
 
             window.addEventListener('click', e => {
@@ -44,33 +49,88 @@ class TicTacToe {
         }
     }
 
-    initMatrix() {
-        let winMapRow = [];
+    getCombinations(colMap, startAt, result = []) {
+        if (startAt >= colMap.length) {
+            return result;
+        }
+
+        const res = [];
+        for (let i = startAt; i < colMap.length; i++) {
+            if (res.length < this.minSize) {
+                res.push(colMap[i]);
+            }
+        }
+
+        if (res.length === this.minSize) {
+            result.push(res);
+        }
         
-        // Hanlde rows
-        this.lis.forEach((li, idx) => {
-            li.setAttribute('data-index', idx);            
-            this.debug && (li.innerHTML = '<span>' + idx + '</span>'); 
-            if (idx && idx % this.size === 0) {
-                this.winMap.push(winMapRow);            
-                winMapRow = [idx];              
-            } else {
-                winMapRow.push(idx);
-            } 
+        return this.getCombinations(colMap, startAt + 1, result);
+    }
+
+    handleH(HMap = []) {
+        this.uls.forEach((ul, ul_idx) => {        
+            const lis = ul.querySelectorAll('li');
+            let colMap = [];
+            lis.forEach((li, li_idx) => {
+                const idx = ul_idx + '' + li_idx;
+                li.setAttribute('data-index', idx);            
+                this.debug && (li.innerHTML = '<span>' + idx + '</span>'); 
+                colMap.push(idx);            
+            });
+
+            const res = this.getCombinations(colMap, 0, []);
+
+            HMap.push(colMap);
+
+            this.winMap = [...this.winMap, ...res]; 
         });
 
-        this.winMap.push(winMapRow); 
+        return HMap;
+    }
 
-        // Handle diagonal left.
-        const diagonal1 = this.winMap.map((val, idx) => val[idx]);
+    handleV(HMap, VMap = []) {
+        const HMap_90 = HMap[0].map((val, index) => HMap.map(row => row[index]).reverse());
+        HMap_90.forEach(val => {
+            const res = this.getCombinations(val, 0, []);
+            VMap = [...VMap,  ...res];
+        });  
+        
+        return {VMap, HMap_90};
+    }
 
-        // Handle columns.
-        const rotate90 = this.winMap[0].map((val, index) => this.winMap.map(row => row[index]).reverse());        
+    handleDiagonals(list, index = 0, up = 1, diagonals = []) {
+        if (list.length < index + 1) {
+            return diagonals;        
+        }
 
-        // Handle diagonal right.
-        const diagonal2 = rotate90.map((val, idx) => val[idx]);
+        const diagonal = list.map((val, idx) => val[idx + up * index]).filter(d => d);
+        const combinations = this.getCombinations(diagonal, 0, []);
 
-        this.winMap = [...this.winMap, ...rotate90, diagonal1, diagonal2];
+        if (diagonal.length >= this.minSize) {
+            diagonals = [...diagonals, ...combinations];
+        }
+        
+        return this.handleDiagonals(list, index + 1, up, diagonals);
+    }
+
+    initMatrix() {
+        const HMap = this.handleH([]);
+
+        const dHUp = this.handleDiagonals(HMap, 0, 1, []);
+        const dHDown  = this.handleDiagonals(HMap, 0, -1, []);
+
+        const diagonalsH = Array.from(new Set([...dHUp, ...dHDown].map(JSON.stringify)), JSON.parse);
+
+        const {VMap, HMap_90} = this.handleV(HMap, []);  
+
+
+        const dVUp = this.handleDiagonals(HMap_90, 0, 1, []);
+        const dVDown  = this.handleDiagonals(HMap_90, 0, -1, []);
+
+        const diagonalsV = Array.from(new Set([...dVUp, ...dVDown].map(JSON.stringify)), JSON.parse);
+
+        this.winMap = [...this.winMap, ...VMap, ...diagonalsH, ...diagonalsV];
         
         this.debug && console.log('Win map', this.winMap);
     }
@@ -97,10 +157,10 @@ class TicTacToe {
     handleWinners() {
         const playerMap = this.players[this.currentPlayer];
         const res = this.players[this.currentPlayer].map(x => parseInt(x, 10));
-        playerMap.length >= this.size && this.winMap.forEach(nums => {
+        playerMap.length >= this.minSize && this.winMap.forEach(nums => {
             let winner = true;
             nums.forEach(n => {
-                winner = winner && res.indexOf(n) > -1;
+                winner = winner && res.indexOf(parseInt(n, 10)) > -1;
             });
             
             if (winner) {
@@ -115,5 +175,5 @@ class TicTacToe {
 }
 
 (function() {
-    new TicTacToe(5, document.querySelector('#root'), true);
+    new TicTacToe(5, 3, document.querySelector('#root'), true);
 })();
