@@ -120,17 +120,21 @@ class TicTacToe {
         const dHUp = this.handleDiagonals(HMap, 0, 1, []);
         const dHDown  = this.handleDiagonals(HMap, 0, -1, []);
 
-        const diagonalsH = Array.from(new Set([...dHUp, ...dHDown].map(JSON.stringify)), JSON.parse);
+        const diagonalsH = [...dHUp, ...dHDown];
 
         const {VMap, HMap_90} = this.handleV(HMap, []);  
-
 
         const dVUp = this.handleDiagonals(HMap_90, 0, 1, []);
         const dVDown  = this.handleDiagonals(HMap_90, 0, -1, []);
 
-        const diagonalsV = Array.from(new Set([...dVUp, ...dVDown].map(JSON.stringify)), JSON.parse);
+        const diagonalsV = [...dVUp, ...dVDown];
 
-        this.winMap = [...this.winMap, ...VMap, ...diagonalsH, ...diagonalsV];
+        this.winMap = Array.from(new Set([
+            ...this.winMap, 
+            ...VMap, 
+            ...diagonalsH, 
+            ...diagonalsV
+        ].map(JSON.stringify)), JSON.parse);
         
         this.debug && console.log('Win map', this.winMap);
     }
@@ -175,5 +179,5 @@ class TicTacToe {
 }
 
 (function() {
-    new TicTacToe(5, 3, document.querySelector('#root'), true);
+    new TicTacToe(7, 3, document.querySelector('#root'), true);
 })();
