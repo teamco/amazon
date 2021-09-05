@@ -179,5 +179,5 @@ class TicTacToe {
 }
 
 (function() {
-    new TicTacToe(7, 3, document.querySelector('#root'), true);
+    new TicTacToe(7, 4, document.querySelector('#root'), true);
 })();
