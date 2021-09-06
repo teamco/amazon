@@ -1,88 +1,60 @@
-class Node {
-    constructor(value){
-        this.value = value;
-        this.left = null;
-        this.right = null;
-    }
+// Time Complexity: O(logN)
+// Auxiliary Space: O(1) 
+let recursiveFunction = function (arr, x, start, end) {
+      
+    // Base Condition
+    if (start > end) return false;
+  
+    // Find the middle index
+    let mid=Math.floor((start + end)/2);
+  
+    // Compare mid with given key x
+    if (arr[mid]===x) return true;
+         
+    // If element at mid is greater than x,
+    // search in the left half of mid
+    if(arr[mid] > x)
+        return recursiveFunction(arr, x, start, mid-1);
+    else
+ 
+        // If element at mid is smaller than x,
+        // search in the right half of mid
+        return recursiveFunction(arr, x, mid+1, end);
 }
 
-class BinarySearchTree {
-    constructor(){
-        this.root = null;
+let iterativeFunction = function (arr, x) {
+  
+    let start=0, end=arr.length-1;
+         
+    // Iterate while start not meets end
+    while (start<=end){
+ 
+        // Find the mid index
+        let mid=Math.floor((start + end)/2);
+  
+        // If element is present at mid, return True
+        if (arr[mid]===x) return true;
+ 
+        // Else look in left or right half accordingly
+        else if (arr[mid] < x)
+             start = mid + 1;
+        else
+             end = mid - 1;
     }
   
-    //helper recursive method for insertion
-    compareAndInsert(currentNode, newNode){
-        //this implementation doesn't allow for duplicates
-        if(currentNode.value === newNode.value){
-            console.log("Node already exists!", currentNode)
-            return false;
-        }
-        //if node is greater than current
-        if(newNode.value > currentNode.value){
-            //if there is no node assigned to right, assign it and break our of the loop
-            if (!currentNode.right){
-                currentNode.right = newNode;
-                return true;
-            } 
-            //calls function recursively with new node for comparison
-            this.compareAndInsert(currentNode.right, newNode);
-
-        //if node is less than current    
-        } else if(newNode.value < currentNode.value){
-            // if there is no left node, assign it and break out of loop
-            if(!currentNode.left){
-                currentNode.left = newNode;
-                return true;
-            }
-            //recursively call function with new node for comparison
-            this.compareAndInsert(currentNode.left, newNode)
-        } 
-        
-        return true;
-    }
-  
-    //checks for root node, otherwise calls recursive function
-    insert(value){
-        const newNode = new Node(value);
-        if(!this.root){
-            this.root = newNode
-        } else {
-            this.compareAndInsert(this.root, newNode);
-        }
-        return this
-    }
-    //helper recursive method for 
-    compareAndFind(currentNode, queriedValue){
-        //node has been found
-        if(currentNode.value === queriedValue){
-            return currentNode
-        }
-
-        //if node is greater than current
-        if(queriedValue > currentNode.value){
-            //if there is a node assigned to the right, recursively call with new values and return the value
-            if (currentNode.right){
-                return this.compareAndFind(currentNode.right, queriedValue);
-            } 
-            //we cannot search further, return false
-            return false;
-        //if node is less than current    
-        } else if(queriedValue < currentNode.value){
-            // if there is a node assigned to the left, recursively call with new values and return the value
-            if(currentNode.left){
-                return this.compareAndFind(currentNode.left, queriedValue)
-            }
-            //we cannot search further, return false
-            return false;
-        } 
-    }
-  
-    //if tree has no root, return false, otherwise search using recursive methods
-    find(value){
-        if(!this.root){
-            return false
-        }
-        return this.compareAndFind(this.root, value)
-    }
+    return false;
 }
+  
+// Driver code
+let arr = [1, 3, 5, 7, 8, 9];
+let x = 5;
+  
+if (recursiveFunction(arr, x, 0, arr.length-1))
+    document.write("Element found!<br>");
+else document.write("Element not found!<br>");
+  
+x = 6;
+  
+if (recursiveFunction(arr, x, 0, arr.length-1))
+    document.write("Element found!<br>");
+else document.write("Element not found!<br>");
