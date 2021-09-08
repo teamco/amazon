@@ -25,6 +25,7 @@ class Calculator {
         this.result = 0;
         this.cache = [];
         this.float = false;
+        this.finish = false;
         this.prevAction = null;
         this.isNewNumber = true;
     }
@@ -41,6 +42,7 @@ class Calculator {
 
                 this.updateValue(btn.innerText);
                 this.isNewNumber = false;
+                this.finish = false;
             });
         });
     }
@@ -66,7 +68,11 @@ class Calculator {
     }
 
     change() {
-        if (this.isNewNumber) {
+        if (this.isNewNumber || this.finish) {
+            if (this.finish) {
+                this.isNewNumber = true;
+                this.result = 0;
+            }
             return false;
         }
         const num = this.cache[this.cache.length - 1];
@@ -96,13 +102,25 @@ class Calculator {
     }
 
     dot() {
+        const input = document.querySelector('input');
+        if (input.value.indexOf('.') > -1 || 
+            typeof this.cache[this.cache.length - 1] === 'function') {
+            return false;
+        }
         this.float = true;
-        this.updateValue('.');
+
+        if (this.finish) {
+            this.result = 0;
+            this.setValue('0.');
+        } else {
+            this.updateValue('.');
+        }
     }
 
     equal() {
         this.calculate();
-        this.result = 0;     
+        this.finish = true;  
+        this.isNewNumber = true;  
     }
 
     updateValue(num) {
