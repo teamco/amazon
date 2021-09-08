@@ -13,15 +13,20 @@ class Calculator {
             '.': this.dot
         }
 
+        this.priority = ['multiply', 'divide'];
+
         this.debug = debug;
 
-        this.cache = 0;
-        this.float = false;
-        this.isNewNumber = true;
-        this.activeAction = null;
-
-        this.initActions();
         this.clear();
+        this.initActions();
+    }
+
+    resetDefaults() {
+        this.result = 0;
+        this.cache = [];
+        this.float = false;
+        this.prevAction = null;
+        this.isNewNumber = true;
     }
 
     initActions() {
@@ -45,28 +50,46 @@ class Calculator {
         if (action.name === 'equal') {
             return this.equal();
         }
-        this.activeAction = action;
+        if (action.name === 'clear') {
+            return this.clear();
+        }  
+        if (action.name === 'dot') {
+            this.isNewNumber = false;
+            return this.dot();
+        }  
+        if (action.name === 'change') {
+            this.isNewNumber = false;
+            return this.change();
+        }        
+        this.updateCache(action);
         this.debug && console.log('handleAction', action);
     }
 
     change() {
-
+        const num = this.cache[this.cache.length - 1];
+        this.cache[this.cache.length - 1] = num * -1;
+        this.setValue(this.cache[this.cache.length - 1]);
     }
 
-    percent(num) {
+    percent(num1, num2) {
         this.float = true;
-        this.activeAction = null; 
-        this.updateCache((this.cache * num) / 100);
+        this.updateResult((num1 * num2) / 100);
     }
 
-    multiply(num) {
-        this.activeAction = null; 
-        this.updateCache(this.cache * num);
+    multiply(num1, num2) {
+        this.updateResult(num1 * num2);
     }
 
-    divide(num) {
-        this.activeAction = null; 
-        this.updateCache(this.cache / num);
+    divide(num1, num2) {
+        this.updateResult(num1 / num2);
+    }
+
+    plus(num1, num2) {
+        this.updateResult(num1 + num2);
+    }
+
+    minus(num1, num2) {
+        this.updateResult(num1 - num2);
     }
 
     dot() {
@@ -75,19 +98,7 @@ class Calculator {
     }
 
     equal() {
-        this.result = this.cache;
-        this.updateCache('0');
-        this.setValue(this.result);      
-    }
-
-    plus(num) {
-        this.activeAction = null; 
-        this.updateCache(this.cache + num);
-    }
-
-    minus(num) {
-        this.activeAction = null; 
-        this.updateCache(this.cache - num);
+        this.calculate();     
     }
 
     updateValue(num) {
@@ -100,14 +111,33 @@ class Calculator {
         this.updateCache(input.value);
     }
 
-    updateCache(num) {
-        const cache = this.float ? parseFloat(num) : parseInt(num, 10);
-        
-        if (this.activeAction) {
-            return this.activeAction(cache);           
-        }
+    updateResult(num) {
+        this.result = num;
+        this.setValue(num);
+    }
 
-        this.cache = cache;        
+    calculate() {
+        if (typeof this.prevAction === 'function') {
+            const num1 = this.result || this.cache[this.cache.length - 3];
+            const num2 = this.cache[this.cache.length - 1];       
+            if (isNaN(num1) || isNaN(num2)) {
+                console.warn('Invalid Math operation');
+                return this.clear('NaN');
+            }
+            this.prevAction(num1, num2);
+            this.prevAction = null;
+        } 
+    }
+
+    updateCache(entity) {
+        if (typeof entity === 'function') {
+            this.calculate();
+            this.prevAction = entity;
+        }
+        const cache = typeof entity === 'function' ? 
+            entity : 
+            this.float ? parseFloat(entity) : parseInt(entity, 10);
+        this.cache.push(cache);        
         this.debug && console.log('updateCache', this.cache);
     }
 
@@ -115,10 +145,9 @@ class Calculator {
         document.querySelector('input').value = num;
     }
 
-    clear() {
-        this.result = 0;
-        this.updateCache('0');
-        this.setValue(this.result);
+    clear(num = 0) {
+        this.resetDefaults();
+        this.setValue(num);
     }
 }
 
