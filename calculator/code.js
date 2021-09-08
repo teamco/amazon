@@ -13,7 +13,7 @@ class Calculator {
             '.': this.dot
         }
 
-        this.priority = ['multiply', 'divide'];
+        // this.priority = ['multiply', 'divide'];
 
         this.debug = debug;
 
