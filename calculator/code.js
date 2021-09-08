@@ -3,11 +3,11 @@ class Calculator {
     constructor(debug) {
         this.actions = {
             'C': this.clear,
-            '+/-': this.change,
+            '±': this.change,
             '%': this.percent,
-            'X': this.multiply,
-            '/': this.divide,
-            '-': this.minus,
+            '×': this.multiply,
+            '÷': this.divide,
+            '−': this.minus,
             '+': this.plus,
             '=': this.equal,
             '.': this.dot
