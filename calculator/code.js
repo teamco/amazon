@@ -66,6 +66,9 @@ class Calculator {
     }
 
     change() {
+        if (this.isNewNumber) {
+            return false;
+        }
         const num = this.cache[this.cache.length - 1];
         this.cache[this.cache.length - 1] = num * -1;
         this.setValue(this.cache[this.cache.length - 1]);
@@ -98,7 +101,8 @@ class Calculator {
     }
 
     equal() {
-        this.calculate();     
+        this.calculate();
+        this.result = 0;     
     }
 
     updateValue(num) {
@@ -117,14 +121,14 @@ class Calculator {
     }
 
     calculate() {
-        if (typeof this.prevAction === 'function') {
-            const num1 = this.result || this.cache[this.cache.length - 3];
+        if (this.prevAction && typeof this.prevAction.fn === 'function') {
+            const num1 = this.result || this.cache[this.prevAction.idx - 1];
             const num2 = this.cache[this.cache.length - 1];       
             if (isNaN(num1) || isNaN(num2)) {
                 console.warn('Invalid Math operation');
                 return this.clear('NaN');
             }
-            this.prevAction(num1, num2);
+            this.prevAction.fn.call(this, num1, num2);
             this.prevAction = null;
         } 
     }
@@ -132,12 +136,13 @@ class Calculator {
     updateCache(entity) {
         if (typeof entity === 'function') {
             this.calculate();
-            this.prevAction = entity;
+            this.prevAction = {fn: entity, idx: this.cache.length};
         }
         const cache = typeof entity === 'function' ? 
             entity : 
             this.float ? parseFloat(entity) : parseInt(entity, 10);
-        this.cache.push(cache);        
+        this.cache.push(cache); 
+
         this.debug && console.log('updateCache', this.cache);
     }
 
