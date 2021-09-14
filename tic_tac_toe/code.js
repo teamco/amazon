@@ -14,24 +14,20 @@ class TicTacToe {
         this.minSize = minSize;
 
         if (size < minSize) {
+            document.querySelector('.error').classList.add('show'); 
             throw new Error('Size less than Min size');
         }
         
-        if (size & 1) {
-            this.renderDOM(root, {margin: 2, width: 50});
-            this.uls = document.querySelectorAll('ul');
-            this.initMatrix(size);
+        this.renderDOM(root, {margin: 2, width: 50});
+        this.uls = document.querySelectorAll('ul');
+        this.initMatrix(size);
 
-            window.addEventListener('click', e => {
-                if (e.target.tagName === 'LI') {
-                  e.preventDefault();
-                  this.handleClick(e.target);
-                }
-            });
-        
-        } else {
-            document.querySelector('.error').classList.add('show'); 
-        }
+        window.addEventListener('click', e => {
+            if (e.target.tagName === 'LI') {
+                e.preventDefault();
+                this.handleClick(e.target);
+            }
+        });        
     }
 
     renderDOM(root, opts) {
