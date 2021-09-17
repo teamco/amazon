@@ -39,7 +39,7 @@ class FizzBuzz {
     iterator() {
         for (let i = this.min; i <= this.max; i += 3) {
             if (i - 1 >= 0) {            
-                console.log(this.isFizzBuzz(i-1));
+                console.log(this.isFizzBuzz(i - 1));
                 console.log(this.isFizzBuzz(i));
                 console.log(this.isFizzBuzz(i + 1));
                 this.count += 1;
