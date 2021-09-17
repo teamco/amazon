@@ -50,7 +50,7 @@ class FizzBuzz {
             }
         } 
         
-        console.log('Total', this.count);
+        console.log('>>> Total', this.count);
     }
 }
 
