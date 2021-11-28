@@ -23,6 +23,6 @@ class Fibonacci {
   }
 
   get() {
-    return this.store[this.limit]
+    return this.store[this.limit - 1]
   }
 }
